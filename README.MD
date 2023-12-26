@@ -21,9 +21,12 @@ struct UserModel {
     password: String,
 }
 
-let db = PostgrestClient::new(URL);
+#[tokio::main]
+async fn main() -> Result<(), std::error::Error> {
+    let db = PostgrestClient::new(URL);
 
-let user_query = db.from("users").find_many::<UserModel>().await;
+    let user_query = db.from("users").find_many::<UserModel>().await;
+}
 ```
 
 ## TODO
