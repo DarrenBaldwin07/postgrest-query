@@ -1,14 +1,14 @@
 
-pub struct Client {
+pub struct PostgrestClient {
     pub url: String
 }
 
-impl Client {
-    pub fn new(url: String) -> Client {
-        Client { url }
+impl PostgrestClient {
+    pub fn new(url: String) -> PostgrestClient {
+        PostgrestClient { url }
     }
 
-    pub fn from(&self) {
-
+    pub fn from(&self, relation: &str) {
+        let url = format!("{}/{}", self.url, relation);
     }
 }
