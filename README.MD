@@ -35,3 +35,4 @@ async fn main() -> Result<(), std::error::Error> {
 - [ ] Allow providing custom schemas to enable even better type safety
 - [ ] Potentially let consumers provide their own fetcher (defaults to [reqwest](https://crates.io/crates/reqwest)) for now
 - [ ] Compile time query checks (similar to `sqlx`)
+- [ ] Explore potential ports of this to other languages (TypeScript, Python, Go, etc.)

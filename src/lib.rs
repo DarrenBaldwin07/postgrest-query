@@ -1,2 +1,3 @@
 pub mod client;
-pub mod builder;
+pub (crate) mod builder;
+pub (crate) mod filter;

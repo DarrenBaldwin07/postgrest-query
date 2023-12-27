@@ -7,36 +7,36 @@ pub struct PostgresQueryBuilder {
 }
 
 impl PostgresQueryBuilder {
-    pub fn new(url: String, headers: HashMap<String, String>) -> PostgresQueryBuilder {
+    pub fn new(url: String, headers: HashMap<String, String>) -> Self {
         PostgresQueryBuilder { url: Url::parse(&url).expect("Failed to parse PostgresQueryBuilder.url"), headers }
     }
 
-    pub fn find_many() {
+
+    pub fn find_unique<T>(&self) {
 
     }
 
-    pub fn find_unique() {
+    pub fn find_many<T>(&self) {
 
     }
 
-    pub fn create() {
+    pub fn create<T>(&self, vales: T) {
 
     }
 
-    pub fn create_many() {
+    pub fn create_many<T>(&self, values: Vec<T>) {
 
     }
 
-    pub fn update() {
+    pub fn update<T>(&self) {
 
     }
 
-    pub fn delete() {
+    pub fn delete(&self) {
 
     }
 
-    pub fn delete_many() {
+    pub fn delete_many(&self) {
 
     }
-
 }
