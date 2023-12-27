@@ -12,7 +12,7 @@ cargo add postgrest-query
 ```rust
 use postgrest_query::PostgrestClient;
 
-const URL: &str = "https://org-postgrest-query-demo-inst-oltp-demo.data-1.use1.tembo.io/restapi/v1";
+const URL: &str = "https://org-postgrest-query-demo-inst.data-1.use1.tembo.io/restapi/v1";
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct UserModel {
