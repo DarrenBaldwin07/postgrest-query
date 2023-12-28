@@ -1,6 +1,5 @@
 use reqwest::{Client, Method, header::HeaderMap};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::collections::HashMap;
 use url::Url;
 
 
