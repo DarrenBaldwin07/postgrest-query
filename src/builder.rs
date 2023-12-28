@@ -1,15 +1,16 @@
 use crate::filter::PostgrestFilter;
 use serde::{Deserialize, Serialize};
+use reqwest::header::HeaderMap;
 use std::collections::HashMap;
 use url::Url;
 
 pub struct PostgresQueryBuilder {
 	pub url: Url,
-	pub headers: HashMap<String, String>,
+	pub headers: HeaderMap,
 }
 
 impl PostgresQueryBuilder {
-	pub fn new(url: String, headers: HashMap<String, String>) -> Self {
+	pub fn new(url: String, headers: HeaderMap) -> Self {
 		PostgresQueryBuilder {
 			url: Url::parse(&url).expect("Failed to parse PostgresQueryBuilder.url"),
 			headers,

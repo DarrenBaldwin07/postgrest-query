@@ -1,7 +1,8 @@
-use reqwest::{Client, Method};
+use reqwest::{Client, Method, header::HeaderMap};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::{collections::HashMap, f32::consts::E};
+use std::collections::HashMap;
 use url::Url;
+
 
 #[derive(Debug)]
 pub enum FilterType {
@@ -77,7 +78,7 @@ where
 	T: Serialize + DeserializeOwned,
 {
 	pub url: Url,
-	pub headers: HashMap<String, String>,
+	pub headers: HeaderMap,
 	pub method: Method,
 	_marker: std::marker::PhantomData<T>,
 }
@@ -86,7 +87,7 @@ impl<T> PostgrestFilter<T>
 where
 	T: Serialize + DeserializeOwned,
 {
-	pub fn new(url: Url, method: Method, headers: HashMap<String, String>) -> Self {
+	pub fn new(url: Url, method: Method, headers: HeaderMap) -> Self {
 		PostgrestFilter {
 			url,
 			headers,
