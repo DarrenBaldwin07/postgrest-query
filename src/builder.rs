@@ -1,3 +1,4 @@
+use crate::filter::PostgrestFilter;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use url::Url;
@@ -26,6 +27,7 @@ impl PostgresQueryBuilder {
 	where
 		T: Serialize + Deserialize<'static>,
 	{
+
 	}
 
 	pub fn create<T>(&self, vales: T)
