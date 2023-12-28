@@ -20,14 +20,12 @@ impl PostgresQueryBuilder {
 	where
 		T: Serialize + Deserialize<'static>,
 	{
-
 	}
 
 	pub fn find_many<T>(&self)
 	where
 		T: Serialize + Deserialize<'static>,
 	{
-
 	}
 
 	pub fn create<T>(&self, vales: T)
