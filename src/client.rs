@@ -3,11 +3,11 @@ use crate::builder::PostgresQueryBuilder;
 
 pub struct PostgrestClient {
 	pub url: String,
-	pub headers: HeaderMap
+	pub headers: Option<HeaderMap>
 }
 
 impl PostgrestClient {
-	pub fn new(url: String, headers: HeaderMap) -> PostgrestClient {
+	pub fn new(url: String, headers: Option<HeaderMap>) -> PostgrestClient {
 		PostgrestClient { url, headers }
 	}
 
@@ -16,9 +16,9 @@ impl PostgrestClient {
 		PostgresQueryBuilder::new(url, self.headers.clone())
 	}
 
-	/// TODO
+	/// TODO https://postgrest.org/en/stable/references/api/schemas.html
 	fn schema() {}
 
-	/// TODO
+	/// TODO: https://postgrest.org/en/stable/references/api/stored_procedures.html
 	fn rpc() {}
 }

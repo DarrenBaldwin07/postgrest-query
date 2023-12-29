@@ -77,7 +77,7 @@ where
 	T: Serialize + DeserializeOwned,
 {
 	pub url: Url,
-	pub headers: HeaderMap,
+	pub headers: Option<HeaderMap>,
 	pub method: Method,
 	_marker: std::marker::PhantomData<T>,
 }
@@ -86,7 +86,7 @@ impl<T> PostgrestFilter<T>
 where
 	T: Serialize + DeserializeOwned,
 {
-	pub fn new(url: Url, method: Method, headers: HeaderMap) -> Self {
+	pub fn new(url: Url, method: Method, headers: Option<HeaderMap>) -> Self {
 		PostgrestFilter {
 			url,
 			headers,
@@ -216,7 +216,7 @@ where
 
 	pub async fn exec(self) -> Result<T, PostgrestError> {
 		let client = Client::new();
-		let res = client.request(self.method, self.url).send().await;
+		let res = client.request(self.method, self.url).headers(self.headers.unwrap_or(HeaderMap::new())).send().await;
 
 		match res {
 			Ok(res) => {
