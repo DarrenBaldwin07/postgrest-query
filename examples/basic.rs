@@ -17,9 +17,14 @@ async fn main() {
     let auth_key = format!("Bearer {}", std::env::var("POSTGREST_JWT").unwrap_or(String::from("")).to_string());
     let mut headers = HeaderMap::new();
     headers.insert("Authorization", auth_key.parse().unwrap());
+    headers.insert("Content-Type", "application/json".parse().unwrap());
 
-    let client = PostgrestClient::new(POSTGREST_URL.to_string(), Some(headers));
-    let filter = client.from("users").find_many::<User>().exec().await;
+    let db = PostgrestClient::new(POSTGREST_URL.to_string(), Some(headers));
+    let query = db.from("users").find_many::<Vec<User>>().exec().await;
 
-    println!("{:?}", filter.unwrap())
+    println!("{:?}", query.unwrap());
 }
+
+
+
+
