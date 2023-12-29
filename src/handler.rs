@@ -1,4 +1,4 @@
-use reqwest::{header::HeaderMap, Client};
+use reqwest::{header::HeaderMap, Client, blocking::Client as BlockingClient};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use url::Url;
 
@@ -28,6 +28,32 @@ impl PostgrestHandler {
     pub fn new(url: Url, headers: Option<HeaderMap>, method: reqwest::Method) -> PostgrestHandler {
         PostgrestHandler { url, headers, method }
     }
+
+	pub async fn exec_blocking<T>(self) ->Result<T, PostgrestError> where
+	T: Serialize + DeserializeOwned {
+        let client = BlockingClient::new();
+		let res = client.request(self.method, self.url).headers(self.headers.unwrap_or(HeaderMap::new())).send();
+
+		match res {
+			Ok(res) => {
+				if res.status().is_success() {
+					match res.json::<T>() {
+						Ok(res) => {
+							return Ok(res);
+						}
+						Err(e) => {
+							return Err(PostgrestError::ReqwestError(e));
+						}
+					}
+				}
+				let err = res.json::<PostgrestErrorResponse>().unwrap();
+				return Err(PostgrestError::PostgrestErrorResponse(err));
+			}
+			Err(e) => {
+				return Err(PostgrestError::ReqwestError(e));
+			}
+		}
+	}
 
     pub async fn exec<T>(self) -> Result<T, PostgrestError> where
 	T: Serialize + DeserializeOwned {
