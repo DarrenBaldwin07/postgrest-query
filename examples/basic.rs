@@ -2,7 +2,7 @@ use postgrest_query::client::PostgrestClient;
 use reqwest::header::HeaderMap;
 use serde::{Deserialize, Serialize};
 
-const POSTGREST_URL: &str = "http://localhost:3000";
+const POSTGREST_URL: &str = "https://org-darren-demo-org-inst-postgrest-test.data-1.use1.tembo.io/restapi/v1";
 
 #[derive(Debug, Deserialize, Serialize)]
 struct User {
@@ -20,4 +20,6 @@ async fn main() {
 
     let client = PostgrestClient::new(POSTGREST_URL.to_string(), Some(headers));
     let filter = client.from("users").find_many::<User>().exec().await;
+
+    println!("{:?}", filter.unwrap())
 }

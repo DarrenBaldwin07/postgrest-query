@@ -67,6 +67,8 @@ pub struct PostgrestErrorResponse {
 	pub message: String,
 }
 
+
+#[derive(Debug)]
 pub enum PostgrestError {
 	PostgrestErrorResponse(PostgrestErrorResponse),
 	ReqwestError(reqwest::Error),
