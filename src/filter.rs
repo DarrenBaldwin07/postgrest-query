@@ -1,6 +1,9 @@
 use reqwest::{Client, Method, header::HeaderMap};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use url::Url;
+use crate::handler::{PostgrestHandler, PostgrestError};
+
+use crate::handler;
 
 
 #[derive(Debug)]
@@ -59,21 +62,6 @@ impl std::fmt::Display for FilterType {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct PostgrestErrorResponse {
-	pub hint: String,
-	pub details: serde_json::Value,
-	pub code: String,
-	pub message: String,
-}
-
-
-#[derive(Debug)]
-pub enum PostgrestError {
-	PostgrestErrorResponse(PostgrestErrorResponse),
-	ReqwestError(reqwest::Error),
-}
-
 pub struct PostgrestFilter<T>
 where
 	T: Serialize + DeserializeOwned,
@@ -112,11 +100,6 @@ where
 		self.url.query_pairs_mut().append_pair(column, format!("gt.{}", value).as_str());
         self
 	}
-
-	pub fn filter(mut self, column: &str, value: &str, filter_method: FilterType) -> Self {
-        self.url.query_pairs_mut().append_pair(column, format!("{}.{}", filter_method, value).as_str());
-        self
-    }
 
     pub fn gte(mut self, column: &str, value: &str) -> Self {
         self.url.query_pairs_mut().append_pair(column, format!("gte.{}", value).as_str());
@@ -213,31 +196,17 @@ where
         self
     }
 
+    pub fn filter(mut self, column: &str, value: &str, filter_method: FilterType) -> Self {
+        self.url.query_pairs_mut().append_pair(column, format!("{}.{}", filter_method, value).as_str());
+        self
+    }
+
 	// TODO: like the normal `.exec()` but with the blocking reqwest client
 	pub async fn exec_blocking(self) {}
 
 	pub async fn exec(self) -> Result<T, PostgrestError> {
-		let client = Client::new();
-		let res = client.request(self.method, self.url).headers(self.headers.unwrap_or(HeaderMap::new())).send().await;
-
-		match res {
-			Ok(res) => {
-				if res.status().is_success() {
-					match res.json::<T>().await {
-						Ok(res) => {
-							return Ok(res);
-						}
-						Err(e) => {
-							return Err(PostgrestError::ReqwestError(e));
-						}
-					}
-				}
-				let err = res.json::<PostgrestErrorResponse>().await.unwrap();
-				return Err(PostgrestError::PostgrestErrorResponse(err));
-			}
-			Err(e) => {
-				return Err(PostgrestError::ReqwestError(e));
-			}
-		}
+		let handler = PostgrestHandler::new(self.url, self.headers, self.method);
+        handler.exec().await
 	}
 }
+
