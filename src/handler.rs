@@ -1,14 +1,12 @@
-use reqwest::{header::HeaderMap, Client, blocking::Client as BlockingClient};
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use reqwest::{blocking::Client as BlockingClient, header::HeaderMap, Client};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use url::Url;
-
 
 #[derive(Debug)]
 pub enum PostgrestError {
 	PostgrestErrorResponse(PostgrestErrorResponse),
 	ReqwestError(reqwest::Error),
 }
-
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PostgrestErrorResponse {
@@ -19,20 +17,25 @@ pub struct PostgrestErrorResponse {
 }
 
 pub struct PostgrestHandler {
-    pub url: Url,
-    pub headers: Option<HeaderMap>,
-    pub method: reqwest::Method,
+	pub url: Url,
+	pub headers: Option<HeaderMap>,
+	pub method: reqwest::Method,
 }
 
 impl PostgrestHandler {
-    pub fn new(url: Url, headers: Option<HeaderMap>, method: reqwest::Method) -> PostgrestHandler {
-        PostgrestHandler { url, headers, method }
-    }
+	pub fn new(url: Url, headers: Option<HeaderMap>, method: reqwest::Method) -> PostgrestHandler {
+		PostgrestHandler { url, headers, method }
+	}
 
-	pub fn exec_blocking<T>(self) ->Result<T, PostgrestError> where
-	T: Serialize + DeserializeOwned {
-        let client = BlockingClient::new();
-		let res = client.request(self.method, self.url).headers(self.headers.unwrap_or(HeaderMap::new())).send();
+	pub fn exec_blocking<T>(self) -> Result<T, PostgrestError>
+	where
+		T: Serialize + DeserializeOwned,
+	{
+		let client = BlockingClient::new();
+		let res = client
+			.request(self.method, self.url)
+			.headers(self.headers.unwrap_or(HeaderMap::new()))
+			.send();
 
 		match res {
 			Ok(res) => {
@@ -55,10 +58,16 @@ impl PostgrestHandler {
 		}
 	}
 
-    pub async fn exec<T>(self) -> Result<T, PostgrestError> where
-	T: Serialize + DeserializeOwned {
-        let client = Client::new();
-		let res = client.request(self.method, self.url).headers(self.headers.unwrap_or(HeaderMap::new())).send().await;
+	pub async fn exec<T>(self) -> Result<T, PostgrestError>
+	where
+		T: Serialize + DeserializeOwned,
+	{
+		let client = Client::new();
+		let res = client
+			.request(self.method, self.url)
+			.headers(self.headers.unwrap_or(HeaderMap::new()))
+			.send()
+			.await;
 
 		match res {
 			Ok(res) => {
@@ -79,5 +88,5 @@ impl PostgrestHandler {
 				return Err(PostgrestError::ReqwestError(e));
 			}
 		}
-    }
+	}
 }

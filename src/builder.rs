@@ -1,6 +1,6 @@
 use crate::filter::PostgrestFilter;
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use reqwest::{header::HeaderMap, Method};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use url::Url;
 
 pub enum Count {
@@ -22,7 +22,6 @@ impl PostgresQueryBuilder {
 		}
 	}
 
-
 	/// TODO: we may not want this at all
 	pub fn find_unique<T>(self)
 	where
@@ -32,7 +31,7 @@ impl PostgresQueryBuilder {
 
 	pub fn find_many<T: Serialize + DeserializeOwned>(self) -> PostgrestFilter<T>
 	where
-		T: Serialize + DeserializeOwned
+		T: Serialize + DeserializeOwned,
 	{
 		PostgrestFilter::new(self.url, Method::GET, self.headers)
 	}

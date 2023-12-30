@@ -1,9 +1,9 @@
-use reqwest::header::HeaderMap;
 use crate::builder::PostgresQueryBuilder;
+use reqwest::header::HeaderMap;
 
 pub struct PostgrestClient {
 	pub url: String,
-	pub headers: Option<HeaderMap>
+	pub headers: Option<HeaderMap>,
 }
 
 impl PostgrestClient {

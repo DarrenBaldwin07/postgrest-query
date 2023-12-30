@@ -6,25 +6,21 @@ const POSTGREST_URL: &str = "https://org-darren-demo-org-inst-postgrest-test.dat
 
 #[derive(Debug, Deserialize, Serialize)]
 struct User {
-    id: i32,
-    name: String,
-    password: String,
+	id: i32,
+	name: String,
+	password: String,
 }
 
 // Run via: `POSTGREST_JWT=your_auth_jwt cargo run --example basic`
 #[tokio::main]
 async fn main() {
-    let auth_key = format!("Bearer {}", std::env::var("POSTGREST_JWT").unwrap_or(String::from("")).to_string());
-    let mut headers = HeaderMap::new();
-    headers.insert("Authorization", auth_key.parse().unwrap());
-    headers.insert("Content-Type", "application/json".parse().unwrap());
+	let auth_key = format!("Bearer {}", std::env::var("POSTGREST_JWT").unwrap_or(String::from("")).to_string());
+	let mut headers = HeaderMap::new();
+	headers.insert("Authorization", auth_key.parse().unwrap());
+	headers.insert("Content-Type", "application/json".parse().unwrap());
 
-    let db = PostgrestClient::new(POSTGREST_URL.to_string(), Some(headers));
-    let query = db.from("users").find_many::<Vec<User>>().exec().await;
+	let db = PostgrestClient::new(POSTGREST_URL.to_string(), Some(headers));
+	let query = db.from("users").find_many::<Vec<User>>().exec().await;
 
-    println!("{:?}", query.unwrap());
+	println!("{:?}", query.unwrap());
 }
-
-
-
-
