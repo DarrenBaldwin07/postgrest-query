@@ -1,5 +1,7 @@
+use std::str::FromStr;
+
 use crate::filter::PostgrestFilter;
-use reqwest::{header::HeaderMap, Method};
+use reqwest::{header::{HeaderMap, HeaderName}, Method};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use url::Url;
 
@@ -22,7 +24,7 @@ impl PostgresQueryBuilder {
 		}
 	}
 
-	/// TODO: we may not want this at all
+	/// TODO: we may not want this at all (users could just use find_many but filter that maybe?)
 	pub fn find_unique<T>(self)
 	where
 		T: Serialize + Deserialize<'static>,
@@ -33,28 +35,66 @@ impl PostgresQueryBuilder {
 	where
 		T: Serialize + DeserializeOwned,
 	{
-		PostgrestFilter::new(self.url, Method::GET, self.headers)
+		PostgrestFilter::new(self.url, Method::GET, self.headers, None)
 	}
 
-	pub fn create<T>(self, values: T, count: Option<Count>, default_to_null: bool) -> PostgrestFilter<T>
+	pub fn create<T>(mut self, values: T, default_to_null: Option<bool>, count: Option<Count>) -> PostgrestFilter<T>
 	where
 		T: Serialize + DeserializeOwned,
 	{
-		PostgrestFilter::new(self.url, Method::POST, self.headers)
+		let mut postgrest_pref_headers: Vec<&str> = Vec::new();
+
+		if let Some(headers) = &self.headers {
+			if let Some(prefer) = headers.get("Prefers") {
+				postgrest_pref_headers.push(prefer.to_str().unwrap());
+			}
+		}
+
+		if let Some(val) = default_to_null {
+			if !val {
+				postgrest_pref_headers.push("missing=default");
+			}
+
+		}
+
+		// https://postgrest.org/en/stable/references/api/pagination_count.html?highlight=count
+		if let Some(val) = count {
+			match val {
+				Count::Exact => postgrest_pref_headers.push("count=exact"),
+				Count::Planned => postgrest_pref_headers.push("count=planned"),
+				Count::Estimated => postgrest_pref_headers.push("count=estimated"),
+			}
+		}
+
+		self.headers = Some(
+			HeaderMap::from_iter(vec![(
+				HeaderName::from_str("Prefer").unwrap(),
+				postgrest_pref_headers.join(",").parse().unwrap(),
+			)])
+		);
+
+		PostgrestFilter::new(self.url, Method::POST, self.headers, Some(values))
 	}
 
 	pub fn create_many<T>(self, values: Vec<T>) -> PostgrestFilter<T>
 	where
 		T: Serialize + DeserializeOwned,
 	{
-		PostgrestFilter::new(self.url, Method::POST, self.headers)
+		PostgrestFilter::new(self.url, Method::POST, self.headers, None)
 	}
 
-	pub fn update<T>(self) -> PostgrestFilter<T>
+	pub fn update<T>(self, values: T) -> PostgrestFilter<T>
 	where
 		T: Serialize + DeserializeOwned,
 	{
-		PostgrestFilter::new(self.url, Method::POST, self.headers)
+		PostgrestFilter::new(self.url, Method::POST, self.headers, None)
+	}
+
+	pub fn update_many<T>(self, values: Vec<T>) -> PostgrestFilter<T>
+	where
+		T: Serialize + DeserializeOwned,
+	{
+		PostgrestFilter::new(self.url, Method::PATCH, self.headers, None)
 	}
 
 	pub fn delete(self) {}

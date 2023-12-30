@@ -1,9 +1,7 @@
 use crate::handler::{PostgrestError, PostgrestHandler};
-use reqwest::{header::HeaderMap, Client, Method};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use reqwest::{header::HeaderMap, Method};
+use serde::{de::DeserializeOwned, Serialize};
 use url::Url;
-
-use crate::handler;
 
 #[derive(Debug)]
 pub enum FilterType {
@@ -68,19 +66,19 @@ where
 	pub url: Url,
 	pub headers: Option<HeaderMap>,
 	pub method: Method,
-	_marker: std::marker::PhantomData<T>,
+    pub body: Option<T>,
 }
 
 impl<T> PostgrestFilter<T>
 where
 	T: Serialize + DeserializeOwned,
 {
-	pub fn new(url: Url, method: Method, headers: Option<HeaderMap>) -> Self {
+	pub fn new(url: Url, method: Method, headers: Option<HeaderMap>, body: Option<T>) -> Self {
 		PostgrestFilter {
 			url,
 			headers,
 			method,
-			_marker: std::marker::PhantomData,
+            body,
 		}
 	}
 
@@ -202,7 +200,6 @@ where
 		self
 	}
 
-	// TODO: like the normal `.exec()` but with the blocking reqwest client
 	pub fn exec_blocking(self) -> Result<T, PostgrestError> {
 		let handler = PostgrestHandler::new(self.url, self.headers, self.method);
 		handler.exec_blocking()
