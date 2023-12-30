@@ -82,7 +82,6 @@ T: Serialize + DeserializeOwned {
 
 		let res = req_builder.send().await;
 
-
 		match res {
 			Ok(res) => {
 				if res.status().is_success() {
@@ -95,7 +94,6 @@ T: Serialize + DeserializeOwned {
 						}
 					}
 				}
-				println!("{:?}", res);
 				let err = res.json::<PostgrestErrorResponse>().await.unwrap();
 				return Err(PostgrestError::PostgrestErrorResponse(err));
 			}

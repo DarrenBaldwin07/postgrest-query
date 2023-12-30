@@ -33,6 +33,6 @@ async fn main() -> Result<(), std::error::Error> {
 
 - [ ] Simple `Rust -> PostgREST -> Postgres` leveraging `serde` and resembling the [Prisma](https://github.com/prisma/prisma) query builder
 - [ ] Allow providing custom schemas to enable even better type safety
-- [ ] Potentially let consumers provide their own fetcher (defaults to [reqwest](https://crates.io/crates/reqwest)) for now
+- [ ] Potentially let consumers provide their own handler (defaults to [reqwest](https://crates.io/crates/reqwest) for now)
 - [ ] Compile time query checks (similar to `sqlx`)
 - [ ] Explore potential ports of this to other languages (TypeScript, Python, Go, etc.)
