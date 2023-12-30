@@ -202,7 +202,10 @@ where
     }
 
 	// TODO: like the normal `.exec()` but with the blocking reqwest client
-	pub async fn exec_blocking(self) {}
+	pub fn exec_blocking(self) -> Result<T, PostgrestError> {
+        let handler = PostgrestHandler::new(self.url, self.headers, self.method);
+        handler.exec_blocking()
+    }
 
 	pub async fn exec(self) -> Result<T, PostgrestError> {
 		let handler = PostgrestHandler::new(self.url, self.headers, self.method);

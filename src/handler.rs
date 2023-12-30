@@ -29,7 +29,7 @@ impl PostgrestHandler {
         PostgrestHandler { url, headers, method }
     }
 
-	pub async fn exec_blocking<T>(self) ->Result<T, PostgrestError> where
+	pub fn exec_blocking<T>(self) ->Result<T, PostgrestError> where
 	T: Serialize + DeserializeOwned {
         let client = BlockingClient::new();
 		let res = client.request(self.method, self.url).headers(self.headers.unwrap_or(HeaderMap::new())).send();
