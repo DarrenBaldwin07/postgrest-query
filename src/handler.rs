@@ -10,37 +10,45 @@ pub enum PostgrestError {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PostgrestErrorResponse {
-	pub hint: String,
-	pub details: serde_json::Value,
-	pub code: String,
-	pub message: String,
+	pub hint: Option<String>,
+	pub details: Option<serde_json::Value>,
+	pub code: Option<String>,
+	pub message: Option<String>,
 }
 
-pub struct PostgrestHandler {
+pub struct PostgrestHandler<T> {
 	pub url: Url,
 	pub headers: Option<HeaderMap>,
 	pub method: reqwest::Method,
+	pub body: Option<T>
 }
 
-impl PostgrestHandler {
-	pub fn new(url: Url, headers: Option<HeaderMap>, method: reqwest::Method) -> PostgrestHandler {
-		PostgrestHandler { url, headers, method }
+impl<T> PostgrestHandler<T> where
+T: Serialize + DeserializeOwned {
+	pub fn new(url: Url, headers: Option<HeaderMap>, method: reqwest::Method, body: Option<T>) -> PostgrestHandler<T> {
+		PostgrestHandler { url, headers, method, body }
 	}
 
-	pub fn exec_blocking<T>(self) -> Result<T, PostgrestError>
+	pub fn exec_blocking<O>(self) -> Result<O, PostgrestError>
 	where
-		T: Serialize + DeserializeOwned,
+		O: Serialize + DeserializeOwned,
 	{
 		let client = BlockingClient::new();
-		let res = client
+		let mut req_builder = client
 			.request(self.method, self.url)
-			.headers(self.headers.unwrap_or(HeaderMap::new()))
-			.send();
+			.headers(self.headers.unwrap_or(HeaderMap::new()));
+
+
+		if let Some(body) = self.body {
+			req_builder = req_builder.json(&body);
+		}
+
+		let res = req_builder.send();
 
 		match res {
 			Ok(res) => {
 				if res.status().is_success() {
-					match res.json::<T>() {
+					match res.json::<O>() {
 						Ok(res) => {
 							return Ok(res);
 						}
@@ -58,21 +66,27 @@ impl PostgrestHandler {
 		}
 	}
 
-	pub async fn exec<T>(self) -> Result<T, PostgrestError>
+	pub async fn exec<O>(self) -> Result<O, PostgrestError>
 	where
-		T: Serialize + DeserializeOwned,
+		O: Serialize + DeserializeOwned,
 	{
 		let client = Client::new();
-		let res = client
+		let mut req_builder = client
 			.request(self.method, self.url)
-			.headers(self.headers.unwrap_or(HeaderMap::new()))
-			.send()
-			.await;
+			.headers(self.headers.unwrap_or(HeaderMap::new()));
+
+
+		if let Some(body) = self.body {
+			req_builder = req_builder.json(&body);
+		}
+
+		let res = req_builder.send().await;
+
 
 		match res {
 			Ok(res) => {
 				if res.status().is_success() {
-					match res.json::<T>().await {
+					match res.json::<O>().await {
 						Ok(res) => {
 							return Ok(res);
 						}
@@ -81,6 +95,7 @@ impl PostgrestHandler {
 						}
 					}
 				}
+				println!("{:?}", res);
 				let err = res.json::<PostgrestErrorResponse>().await.unwrap();
 				return Err(PostgrestError::PostgrestErrorResponse(err));
 			}

@@ -201,12 +201,12 @@ where
 	}
 
 	pub fn exec_blocking(self) -> Result<T, PostgrestError> {
-		let handler = PostgrestHandler::new(self.url, self.headers, self.method);
+		let handler = PostgrestHandler::new(self.url, self.headers, self.method, self.body);
 		handler.exec_blocking()
 	}
 
 	pub async fn exec(self) -> Result<T, PostgrestError> {
-		let handler = PostgrestHandler::new(self.url, self.headers, self.method);
+		let handler = PostgrestHandler::new(self.url, self.headers, self.method, self.body);
 		handler.exec().await
 	}
 }

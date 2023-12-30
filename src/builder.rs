@@ -43,6 +43,7 @@ impl PostgresQueryBuilder {
 		T: Serialize + DeserializeOwned,
 	{
 		let mut postgrest_pref_headers: Vec<&str> = Vec::new();
+		let mut new_headers = self.headers.clone().unwrap_or_else(HeaderMap::new);
 
 		if let Some(headers) = &self.headers {
 			if let Some(prefer) = headers.get("Prefers") {
@@ -66,12 +67,12 @@ impl PostgresQueryBuilder {
 			}
 		}
 
-		self.headers = Some(
-			HeaderMap::from_iter(vec![(
-				HeaderName::from_str("Prefer").unwrap(),
-				postgrest_pref_headers.join(",").parse().unwrap(),
-			)])
-		);
+		new_headers.insert(
+            HeaderName::from_str("Prefer").unwrap(),
+            postgrest_pref_headers.join(",").parse().unwrap(),
+        );
+
+        self.headers = Some(new_headers);
 
 		PostgrestFilter::new(self.url, Method::POST, self.headers, Some(values))
 	}
