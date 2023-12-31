@@ -15,7 +15,7 @@ use postgrest_query::PostgrestClient;
 const URL: &str = "https://org-postgrest-query-demo-inst.data-1.use1.tembo.io/restapi/v1";
 
 #[derive(serde::Serialize, serde::Deserialize)]
-struct UserModel {
+struct User {
     id: i32,
     name: String,
     password: String,
@@ -25,7 +25,7 @@ struct UserModel {
 async fn main() -> Result<(), std::error::Error> {
     let db = PostgrestClient::new(URL);
 
-    let user_query = db.from("users").find_many::<UserModel>().exec().await;
+    let user_query = db.from("users").find_many::<User>().exec().await;
 }
 ```
 
