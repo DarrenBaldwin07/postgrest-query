@@ -1,16 +1,21 @@
 use std::str::FromStr;
 
 use crate::filter::PostgrestFilter;
-use reqwest::{header::{HeaderMap, HeaderName}, Method};
+use reqwest::{
+	header::{HeaderMap, HeaderName},
+	Method,
+};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use url::Url;
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum Count {
 	Exact,
 	Planned,
 	Estimated,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum PostgrestQuery {
 	FindUnique,
 	FindMany,
@@ -19,7 +24,7 @@ pub enum PostgrestQuery {
 	Update,
 	UpdateMany,
 	Delete,
-	DeleteMany
+	DeleteMany,
 }
 
 pub struct PostgresQueryBuilder {
@@ -49,7 +54,7 @@ impl PostgresQueryBuilder {
 		PostgrestFilter::new(self.url, Method::GET, self.headers, None, PostgrestQuery::FindMany)
 	}
 
-	pub fn create<T>(mut self, values: T, default_to_null: Option<bool>, count: Option<Count>) -> PostgrestFilter<serde_json::Value, T>
+	pub fn create<T>(mut self, values: T, default_to_null: Option<bool>, count: Option<Count>) -> PostgrestFilter<i32, T>
 	where
 		T: Serialize + DeserializeOwned,
 	{
@@ -66,7 +71,6 @@ impl PostgresQueryBuilder {
 			if !val {
 				postgrest_pref_headers.push("missing=default");
 			}
-
 		}
 
 		// https://postgrest.org/en/stable/references/api/pagination_count.html?highlight=count
@@ -78,12 +82,9 @@ impl PostgresQueryBuilder {
 			}
 		}
 
-		new_headers.insert(
-            HeaderName::from_str("Prefer").unwrap(),
-            postgrest_pref_headers.join(",").parse().unwrap(),
-        );
+		new_headers.insert(HeaderName::from_str("Prefer").unwrap(), postgrest_pref_headers.join(",").parse().unwrap());
 
-        self.headers = Some(new_headers);
+		self.headers = Some(new_headers);
 
 		PostgrestFilter::new(self.url, Method::POST, self.headers, Some(values), PostgrestQuery::Create)
 	}

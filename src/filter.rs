@@ -1,5 +1,7 @@
-use crate::handler::{PostgrestError, PostgrestHandler};
-use crate::builder::PostgrestQuery;
+use crate::{
+	builder::PostgrestQuery,
+	handler::{PostgrestError, PostgrestHandler},
+};
 use reqwest::{header::HeaderMap, Method};
 use serde::{de::DeserializeOwned, Serialize};
 use url::Url;
@@ -67,7 +69,7 @@ where
 	pub url: Url,
 	pub headers: Option<HeaderMap>,
 	pub method: Method,
-    pub body: Option<B>,
+	pub body: Option<B>,
 	pub query_type: PostgrestQuery,
 	pub _marker: std::marker::PhantomData<T>,
 }
@@ -82,7 +84,7 @@ where
 			url,
 			headers,
 			method,
-            body,
+			body,
 			query_type,
 			_marker: std::marker::PhantomData,
 		}
@@ -207,12 +209,12 @@ where
 	}
 
 	pub fn exec_blocking(self) -> Result<T, PostgrestError> {
-		let handler = PostgrestHandler::new(self.url, self.headers, self.method, self.body);
+		let handler = PostgrestHandler::new(self.url, self.headers, self.method, self.body, self.query_type);
 		handler.exec_blocking()
 	}
 
 	pub async fn exec(self) -> Result<T, PostgrestError> {
-		let handler = PostgrestHandler::new(self.url, self.headers, self.method, self.body);
+		let handler = PostgrestHandler::new(self.url, self.headers, self.method, self.body, self.query_type);
 		handler.exec().await
 	}
 }

@@ -22,11 +22,19 @@ async fn main() {
 	let db = PostgrestClient::new(POSTGREST_URL.to_string(), Some(headers));
 	//let query = db.from("users").find_many::<Vec<User>>().exec().await;
 
-	let insert = db.from("users").create(User {
-		id: 58,
-		name: "Darren".to_string(),
-		password: "password".to_string(),
-	}, None, None).exec().await;
+	let insert = db
+		.from("users")
+		.create(
+			User {
+				id: 65,
+				name: "Darren".to_string(),
+				password: "password".to_string(),
+			},
+			None,
+			None,
+		)
+		.exec()
+		.await;
 
 	println!("INSERT{:?}", insert);
 }
