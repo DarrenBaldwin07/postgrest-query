@@ -1,4 +1,5 @@
 use crate::handler::{PostgrestError, PostgrestHandler};
+use crate::builder::PostgrestQuery;
 use reqwest::{header::HeaderMap, Method};
 use serde::{de::DeserializeOwned, Serialize};
 use url::Url;
@@ -59,26 +60,31 @@ impl std::fmt::Display for FilterType {
 	}
 }
 
-pub struct PostgrestFilter<T>
+pub struct PostgrestFilter<T, B>
 where
 	T: Serialize + DeserializeOwned,
 {
 	pub url: Url,
 	pub headers: Option<HeaderMap>,
 	pub method: Method,
-    pub body: Option<T>,
+    pub body: Option<B>,
+	pub query_type: PostgrestQuery,
+	pub _marker: std::marker::PhantomData<T>,
 }
 
-impl<T> PostgrestFilter<T>
+impl<T, B> PostgrestFilter<T, B>
 where
 	T: Serialize + DeserializeOwned,
+	B: Serialize + DeserializeOwned,
 {
-	pub fn new(url: Url, method: Method, headers: Option<HeaderMap>, body: Option<T>) -> Self {
+	pub fn new(url: Url, method: Method, headers: Option<HeaderMap>, body: Option<B>, query_type: PostgrestQuery) -> Self {
 		PostgrestFilter {
 			url,
 			headers,
 			method,
             body,
+			query_type,
+			_marker: std::marker::PhantomData,
 		}
 	}
 

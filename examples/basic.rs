@@ -23,7 +23,7 @@ async fn main() {
 	//let query = db.from("users").find_many::<Vec<User>>().exec().await;
 
 	let insert = db.from("users").create(User {
-		id: 55,
+		id: 58,
 		name: "Darren".to_string(),
 		password: "password".to_string(),
 	}, None, None).exec().await;

@@ -11,6 +11,17 @@ pub enum Count {
 	Estimated,
 }
 
+pub enum PostgrestQuery {
+	FindUnique,
+	FindMany,
+	Create,
+	CreateMany,
+	Update,
+	UpdateMany,
+	Delete,
+	DeleteMany
+}
+
 pub struct PostgresQueryBuilder {
 	pub url: Url,
 	pub headers: Option<HeaderMap>,
@@ -31,14 +42,14 @@ impl PostgresQueryBuilder {
 	{
 	}
 
-	pub fn find_many<T: Serialize + DeserializeOwned>(self) -> PostgrestFilter<T>
+	pub fn find_many<T: Serialize + DeserializeOwned>(self) -> PostgrestFilter<T, T>
 	where
 		T: Serialize + DeserializeOwned,
 	{
-		PostgrestFilter::new(self.url, Method::GET, self.headers, None)
+		PostgrestFilter::new(self.url, Method::GET, self.headers, None, PostgrestQuery::FindMany)
 	}
 
-	pub fn create<T>(mut self, values: T, default_to_null: Option<bool>, count: Option<Count>) -> PostgrestFilter<T>
+	pub fn create<T>(mut self, values: T, default_to_null: Option<bool>, count: Option<Count>) -> PostgrestFilter<serde_json::Value, T>
 	where
 		T: Serialize + DeserializeOwned,
 	{
@@ -74,28 +85,28 @@ impl PostgresQueryBuilder {
 
         self.headers = Some(new_headers);
 
-		PostgrestFilter::new(self.url, Method::POST, self.headers, Some(values))
+		PostgrestFilter::new(self.url, Method::POST, self.headers, Some(values), PostgrestQuery::Create)
 	}
 
-	pub fn create_many<T>(self, values: Vec<T>) -> PostgrestFilter<T>
+	pub fn create_many<T>(self, values: Vec<T>) -> PostgrestFilter<T, T>
 	where
 		T: Serialize + DeserializeOwned,
 	{
-		PostgrestFilter::new(self.url, Method::POST, self.headers, None)
+		PostgrestFilter::new(self.url, Method::POST, self.headers, None, PostgrestQuery::CreateMany)
 	}
 
-	pub fn update<T>(self, values: T) -> PostgrestFilter<T>
+	pub fn update<T>(self, values: T) -> PostgrestFilter<T, T>
 	where
 		T: Serialize + DeserializeOwned,
 	{
-		PostgrestFilter::new(self.url, Method::POST, self.headers, None)
+		PostgrestFilter::new(self.url, Method::POST, self.headers, None, PostgrestQuery::Update)
 	}
 
-	pub fn update_many<T>(self, values: Vec<T>) -> PostgrestFilter<T>
+	pub fn update_many<T>(self, values: Vec<T>) -> PostgrestFilter<T, T>
 	where
 		T: Serialize + DeserializeOwned,
 	{
-		PostgrestFilter::new(self.url, Method::PATCH, self.headers, None)
+		PostgrestFilter::new(self.url, Method::PATCH, self.headers, None, PostgrestQuery::UpdateMany)
 	}
 
 	pub fn delete(self) {}
