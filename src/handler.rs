@@ -2,7 +2,6 @@ use crate::builder::PostgrestQuery;
 use reqwest::{blocking::Client as BlockingClient, header::HeaderMap, Client};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
-use std::any::{Any, TypeId};
 use url::Url;
 
 #[derive(Debug)]
@@ -25,33 +24,6 @@ pub struct PostgrestHandler<T> {
 	pub method: reqwest::Method,
 	pub query_type: PostgrestQuery,
 	pub body: Option<T>,
-}
-
-#[derive(Clone, Copy, PartialEq, Eq)]
-#[non_exhaustive]
-enum Container {
-	Vector,
-	Any,
-}
-
-trait MyAny: Any {
-	fn get_container(&self) -> Container;
-}
-
-impl<T: Any> MyAny for Vec<T> {
-	fn get_container(&self) -> Container {
-		Container::Vector
-	}
-}
-
-impl MyAny for dyn Any {
-	fn get_container(&self) -> Container {
-		Container::Any
-	}
-}
-
-fn is_vec<T: MyAny + ?Sized>(s: &T) -> bool {
-	s.get_container() == Container::Vector
 }
 
 impl<T> PostgrestHandler<T>
