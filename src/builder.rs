@@ -46,7 +46,10 @@ impl PostgresQueryBuilder {
 		T: Serialize + Deserialize<'static>,
 	{
 	}
-
+	/// Perform a SELECT query on the table/view.
+	/// Returns all rows for the specified relation (table)
+	///
+	/// # Example
 	pub fn find_many<T: Serialize + DeserializeOwned>(self) -> PostgrestFilter<T, T>
 	where
 		T: Serialize + DeserializeOwned,
@@ -128,17 +131,30 @@ impl PostgresQueryBuilder {
 	where
 		T: Serialize + DeserializeOwned,
 	{
-		PostgrestFilter::new(self.url, Method::POST, self.headers, None, PostgrestQuery::Update)
+		PostgrestFilter::new(self.url, Method::PATCH, self.headers, Some(values), PostgrestQuery::Update)
 	}
 
-	pub fn update_many<T>(self, values: Vec<T>) -> PostgrestFilter<T, T>
+	pub fn upsert<T>(
+		self,
+		values: T,
+		on_conflict: String,
+		is_duplicates: Option<bool>,
+		default_to_null: Option<bool>,
+		count: Option<Count>,
+		ignore_duplicates: Option<bool>,
+	) -> PostgrestFilter<T, T>
 	where
 		T: Serialize + DeserializeOwned,
 	{
-		PostgrestFilter::new(self.url, Method::PATCH, self.headers, None, PostgrestQuery::UpdateMany)
+		PostgrestFilter::new(self.url, Method::POST, self.headers, Some(values), PostgrestQuery::Update)
 	}
 
-	pub fn delete(self) {}
+	pub fn delete<T>(self, count: Option<Count>) -> PostgrestFilter<T, T>
+	where
+		T: Serialize + DeserializeOwned,
+	{
+		PostgrestFilter::new(self.url, Method::POST, self.headers, None, PostgrestQuery::Delete)
+	}
 
 	pub fn delete_many(self) {}
 }
