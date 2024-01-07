@@ -40,12 +40,13 @@ impl PostgresQueryBuilder {
 		}
 	}
 
-	/// TODO: we may not want this at all (users could just use find_many but filter that maybe?)
+	/// TODO: we may not want this at all (users could just use `find_many`` but filter that)
 	pub fn find_unique<T>(self)
 	where
 		T: Serialize + Deserialize<'static>,
 	{
 	}
+
 	/// Perform a SELECT query on the table/view.
 	/// Returns all rows for the specified relation (table)
 	///
@@ -146,15 +147,48 @@ impl PostgresQueryBuilder {
 	where
 		T: Serialize + DeserializeOwned,
 	{
+		let ignore_duplicates = if ignore_duplicates.unwrap_or(false) {
+			"ignore"
+		} else {
+			"merge"
+		};
+
+		let mut postgrest_pref_headers: Vec<&str> = vec![&format!("resolution={ignoreDuplicates}-duplicates", ignoreDuplicates = ignore_duplicates)];
+
 		PostgrestFilter::new(self.url, Method::POST, self.headers, Some(values), PostgrestQuery::Update)
 	}
 
-	pub fn delete<T>(self, count: Option<Count>) -> PostgrestFilter<T, T>
+	/// Perform a DELETE query on the table/view.
+	///
+	/// > Note: using `.delete()` should always be paried with filters to raget specific row(s)
+	/// # Example
+	pub fn delete<T>(mut self, count: Option<Count>) -> PostgrestFilter<T, T>
 	where
 		T: Serialize + DeserializeOwned,
 	{
-		PostgrestFilter::new(self.url, Method::POST, self.headers, None, PostgrestQuery::Delete)
+		let mut postgrest_pref_headers: Vec<&str> = Vec::new();
+		let mut new_headers = self.headers.clone().unwrap_or_else(HeaderMap::new);
+
+		if let Some(val) = count {
+			match val {
+				Count::Exact => postgrest_pref_headers.push("count=exact"),
+				Count::Planned => postgrest_pref_headers.push("count=planned"),
+				Count::Estimated => postgrest_pref_headers.push("count=estimated"),
+			}
+		}
+
+		if let Some(headers) = &self.headers {
+			if let Some(prefer) = headers.get("Prefers") {
+				postgrest_pref_headers.insert(0, prefer.to_str().unwrap());
+			}
+		}
+
+		new_headers.insert(HeaderName::from_str("Prefer").unwrap(), postgrest_pref_headers.join(",").parse().unwrap());
+		self.headers = Some(new_headers);
+
+		PostgrestFilter::new(self.url, Method::DELETE, self.headers, None, PostgrestQuery::Delete)
 	}
 
+	/// TODO: Maybe it makes sense not to have this?
 	pub fn delete_many(self) {}
 }
