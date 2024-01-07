@@ -1,4 +1,4 @@
-use crate::builder::PostgresQueryBuilder;
+use crate::builder::PostgrestQueryBuilder;
 use reqwest::header::HeaderMap;
 
 pub struct PostgrestClient {
@@ -11,9 +11,9 @@ impl PostgrestClient {
 		PostgrestClient { url, headers }
 	}
 
-	pub fn from(&self, relation: &str) -> PostgresQueryBuilder {
+	pub fn from(&self, relation: &str) -> PostgrestQueryBuilder {
 		let url = format!("{}/{}", self.url, relation);
-		PostgresQueryBuilder::new(url, self.headers.clone())
+		PostgrestQueryBuilder::new(url, self.headers.clone())
 	}
 
 	/// TODO https://postgrest.org/en/stable/references/api/schemas.html

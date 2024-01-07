@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::filter::PostgrestFilter;
+use crate::{filter::PostgrestFilter, handler::{PostgrestError, PostgrestHandler}};
 use reqwest::{
 	header::{HeaderMap, HeaderName},
 	Method,
@@ -27,15 +27,15 @@ pub enum PostgrestQuery {
 	DeleteMany,
 }
 
-pub struct PostgresQueryBuilder {
+pub struct PostgrestQueryBuilder {
 	pub url: Url,
 	pub headers: Option<HeaderMap>,
 }
 
-impl PostgresQueryBuilder {
+impl PostgrestQueryBuilder {
 	pub fn new(url: String, headers: Option<HeaderMap>) -> Self {
-		PostgresQueryBuilder {
-			url: Url::parse(&url).expect("Failed to parse PostgresQueryBuilder.url"),
+		PostgrestQueryBuilder {
+			url: Url::parse(&url).expect("Failed to parse PostgrestQueryBuilder.url"),
 			headers,
 		}
 	}
@@ -136,10 +136,9 @@ impl PostgresQueryBuilder {
 	}
 
 	pub fn upsert<T>(
-		self,
+		mut self,
 		values: T,
-		on_conflict: String,
-		is_duplicates: Option<bool>,
+		on_conflict: Option<String>,
 		default_to_null: Option<bool>,
 		count: Option<Count>,
 		ignore_duplicates: Option<bool>,
@@ -153,7 +152,39 @@ impl PostgresQueryBuilder {
 			"merge"
 		};
 
-		let mut postgrest_pref_headers: Vec<&str> = vec![&format!("resolution={ignoreDuplicates}-duplicates", ignoreDuplicates = ignore_duplicates)];
+		let resolution = format!("resolution={ignoreDuplicates}-duplicates", ignoreDuplicates = ignore_duplicates);
+
+		let mut postgrest_pref_headers: Vec<&str> = vec![&resolution];
+		let mut new_headers = self.headers.clone().unwrap_or_else(HeaderMap::new);
+
+		if let Some(on_conflict) = on_conflict {
+			self.url.query_pairs_mut().append_pair("on_conflict", &on_conflict);
+		}
+
+		if let Some(headers) = &self.headers {
+			if let Some(prefer) = headers.get("Prefers") {
+				postgrest_pref_headers.push(prefer.to_str().unwrap());
+			}
+		}
+
+		if let Some(val) = default_to_null {
+			if !val {
+				postgrest_pref_headers.push("missing=default");
+			}
+		}
+
+		// https://postgrest.org/en/stable/references/api/pagination_count.html?highlight=count
+		if let Some(val) = count {
+			match val {
+				Count::Exact => postgrest_pref_headers.push("count=exact"),
+				Count::Planned => postgrest_pref_headers.push("count=planned"),
+				Count::Estimated => postgrest_pref_headers.push("count=estimated"),
+			}
+		}
+
+		new_headers.insert(HeaderName::from_str("Prefer").unwrap(), postgrest_pref_headers.join(",").parse().unwrap());
+
+		self.headers = Some(new_headers);
 
 		PostgrestFilter::new(self.url, Method::POST, self.headers, Some(values), PostgrestQuery::Update)
 	}
@@ -191,4 +222,38 @@ impl PostgresQueryBuilder {
 
 	/// TODO: Maybe it makes sense not to have this?
 	pub fn delete_many(self) {}
+}
+
+
+/// Builder that goes streight to exec and doesnt have any filter methods on it
+pub struct PostgrestExecBuilder<T> where
+T: Serialize + DeserializeOwned {
+	pub url: Url,
+	pub headers: Option<HeaderMap>,
+	pub method: Method,
+	pub query_type: PostgrestQuery,
+	pub _marker: std::marker::PhantomData<T>,
+}
+
+impl<T> PostgrestExecBuilder<T> where
+T: Serialize + DeserializeOwned {
+	pub fn new(url: Url, headers: Option<HeaderMap>, method: Method, query_type: PostgrestQuery) -> Self {
+		PostgrestExecBuilder {
+			url,
+			headers,
+			method,
+			query_type,
+			_marker: std::marker::PhantomData,
+		}
+	}
+
+	pub fn exec_blocking(self) -> Result<T, PostgrestError> {
+		let handler: PostgrestHandler<T> = PostgrestHandler::new(self.url, self.headers, self.method, None, self.query_type);
+		handler.exec_blocking()
+	}
+
+	pub async fn exec(self) -> Result<T, PostgrestError> {
+		let handler: PostgrestHandler<T> = PostgrestHandler::new(self.url, self.headers, self.method, None, self.query_type);
+		handler.exec().await
+	}
 }
