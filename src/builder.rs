@@ -1,11 +1,11 @@
-use std::str::FromStr;
+use std::{str::FromStr, iter::Filter};
 
-use crate::{filter::PostgrestFilter, handler::{PostgrestError, PostgrestHandler}};
+use crate::{filter::{PostgrestFilter, FilterType}, handler::{PostgrestError, PostgrestHandler}};
 use reqwest::{
 	header::{HeaderMap, HeaderName},
 	Method,
 };
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Serialize};
 use url::Url;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -40,11 +40,19 @@ impl PostgrestQueryBuilder {
 		}
 	}
 
-	/// TODO: we may not want this at all (users could just use `find_many`` but filter that)
-	pub fn find_unique<T>(self)
+	/// Perform a SELECT query on the table/view (similar to `find_many` except this requires filters)
+	///
+	/// # Example
+	pub fn find_unique<T, U>(mut self, filter_column: &str, filter_type: FilterType, filter_value: U) -> PostgrestExecBuilder<T>
 	where
-		T: Serialize + Deserialize<'static>,
+		T: Serialize + DeserializeOwned,
+		U: Serialize + DeserializeOwned + ToString
 	{
+		let filter_str = format!("{}.{}", filter_type.to_string(), filter_value.to_string());
+
+		self.url.query_pairs_mut().append_pair(filter_column, filter_str.as_str());
+
+		PostgrestExecBuilder::new(self.url, self.headers, Method::GET, PostgrestQuery::FindUnique)
 	}
 
 	/// Perform a SELECT query on the table/view.
@@ -128,10 +136,31 @@ impl PostgrestQueryBuilder {
 		PostgrestFilter::new(self.url, Method::POST, self.headers, Some(values), PostgrestQuery::CreateMany)
 	}
 
-	pub fn update<T>(self, values: T) -> PostgrestFilter<T, T>
+	pub fn update<T>(mut self, values: T, count: Option<Count>) -> PostgrestFilter<T, T>
 	where
 		T: Serialize + DeserializeOwned,
 	{
+		let mut postgrest_pref_headers: Vec<&str> = Vec::new();
+		let mut new_headers = self.headers.clone().unwrap_or_else(HeaderMap::new);
+
+		if let Some(headers) = &self.headers {
+			if let Some(prefer) = headers.get("Prefers") {
+				postgrest_pref_headers.push(prefer.to_str().unwrap());
+			}
+		}
+
+		// https://postgrest.org/en/stable/references/api/pagination_count.html?highlight=count
+		if let Some(val) = count {
+			match val {
+				Count::Exact => postgrest_pref_headers.push("count=exact"),
+				Count::Planned => postgrest_pref_headers.push("count=planned"),
+				Count::Estimated => postgrest_pref_headers.push("count=estimated"),
+			}
+		}
+
+		new_headers.insert(HeaderName::from_str("Prefer").unwrap(), postgrest_pref_headers.join(",").parse().unwrap());
+		self.headers = Some(new_headers);
+
 		PostgrestFilter::new(self.url, Method::PATCH, self.headers, Some(values), PostgrestQuery::Update)
 	}
 
@@ -191,7 +220,7 @@ impl PostgrestQueryBuilder {
 
 	/// Perform a DELETE query on the table/view.
 	///
-	/// > Note: using `.delete()` should always be paried with filters to raget specific row(s)
+	/// > Note: using `.delete()` should always be paried with filters to target specific row(s)
 	/// # Example
 	pub fn delete<T>(mut self, count: Option<Count>) -> PostgrestFilter<T, T>
 	where
@@ -224,8 +253,7 @@ impl PostgrestQueryBuilder {
 	pub fn delete_many(self) {}
 }
 
-
-/// Builder that goes streight to exec and doesnt have any filter methods on it
+/// Builder that goes streight to `exec` or `exec_blocking` and doesnt have any filter methods
 pub struct PostgrestExecBuilder<T> where
 T: Serialize + DeserializeOwned {
 	pub url: Url,
