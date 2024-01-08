@@ -1,4 +1,4 @@
-use std::{str::FromStr, iter::Filter};
+use std::str::FromStr;
 
 use crate::{filter::{PostgrestFilter, FilterType}, handler::{PostgrestError, PostgrestHandler}};
 use reqwest::{

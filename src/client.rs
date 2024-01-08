@@ -19,6 +19,7 @@ impl PostgrestClient {
 	/// TODO https://postgrest.org/en/stable/references/api/schemas.html
 	fn schema() {}
 
+	/// Call a function in your database via postgrest
 	/// TODO: https://postgrest.org/en/stable/references/api/stored_procedures.html
 	fn rpc() {}
 }

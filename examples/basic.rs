@@ -20,7 +20,7 @@ async fn main() {
 	headers.insert("Content-Type", "application/json".parse().unwrap());
 
 	let db = PostgrestClient::new(POSTGREST_URL.to_string(), Some(headers));
-	//let query = db.from("users").find_many::<Vec<User>>().exec().await;
+	let query = db.from("users").delete::<serde_json::Value>(None).eq("id", "70").exec().await;
 
 	// let insert = db
 	// 	.from("users")
@@ -36,26 +36,26 @@ async fn main() {
 	// 	.exec()
 	// 	.await;
 
-	let insert_many = db
-		.from("users")
-		.create_many(
-			vec![
-				User {
-					id: 70,
-					name: "Darren".to_string(),
-					password: "password".to_string(),
-				},
-				User {
-					id: 71,
-					name: "Darren".to_string(),
-					password: "password".to_string(),
-				},
-			],
-			None,
-			None,
-		)
-		.exec()
-		.await;
+	// let insert_many = db
+	// 	.from("users")
+	// 	.create_many(
+	// 		vec![
+	// 			User {
+	// 				id: 70,
+	// 				name: "Darren".to_string(),
+	// 				password: "password".to_string(),
+	// 			},
+	// 			User {
+	// 				id: 71,
+	// 				name: "Darren".to_string(),
+	// 				password: "password".to_string(),
+	// 			},
+	// 		],
+	// 		None,
+	// 		None,
+	// 	)
+	// 	.exec()
+	// 	.await;
 
-	println!("INSERT MANY{:?}", insert_many);
+	println!("QUERY{:?}", query);
 }
