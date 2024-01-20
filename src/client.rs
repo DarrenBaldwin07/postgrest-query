@@ -26,7 +26,7 @@ impl PostgrestClient {
 
 	/// Call a function in your database via postgrest
 	/// TODO: https://postgrest.org/en/stable/references/api/stored_procedures.html
-	fn call<T>(mut self, function: &str, head: bool, count: Option<Count>, args: HashMap<&str, serde_json::Value>) -> PostgrestFilter<T, T>
+	pub fn call<T>(mut self, function: &str, head: bool, count: Option<Count>, args: HashMap<&str, serde_json::Value>) -> PostgrestFilter<T, T>
 	where
 		T: Serialize + DeserializeOwned,
 	{
