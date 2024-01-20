@@ -18,6 +18,17 @@ pub enum Count {
 	Estimated,
 }
 
+impl std::fmt::Display for Count {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		let lowercase_str = match self {
+			Count::Exact => "exact",
+			Count::Planned => "planned",
+			Count::Estimated => "estimated",
+		};
+		write!(f, "{}", lowercase_str)
+	}
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum PostgrestQuery {
 	FindUnique,
@@ -28,6 +39,7 @@ pub enum PostgrestQuery {
 	UpdateMany,
 	Delete,
 	DeleteMany,
+	Call,
 }
 
 pub struct PostgrestQueryBuilder {
