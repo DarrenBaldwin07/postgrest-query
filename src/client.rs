@@ -1,4 +1,4 @@
-use crate::builder::PostgrestQueryBuilder;
+use crate::builder::{PostgrestQueryBuilder, Count};
 use reqwest::header::HeaderMap;
 
 pub struct PostgrestClient {
@@ -21,5 +21,7 @@ impl PostgrestClient {
 
 	/// Call a function in your database via postgrest
 	/// TODO: https://postgrest.org/en/stable/references/api/stored_procedures.html
-	fn rpc() {}
+	fn call(&self, function: &str, head: Option<bool>, count: Count) {
+		let mut url = format!("{}/rpc/{}", self.url, function);
+	}
 }
