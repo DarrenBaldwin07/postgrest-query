@@ -26,7 +26,7 @@ impl PostgrestClient {
 
 	/// Call a function in your database via postgrest
 	/// TODO: https://postgrest.org/en/stable/references/api/stored_procedures.html
-	fn call<T>(self, function: &str, head: bool, count: Option<Count>, args: HashMap<&str, serde_json::Value>) -> PostgrestFilter<T, T>
+	fn call<T>(mut self, function: &str, head: bool, count: Option<Count>, args: HashMap<&str, serde_json::Value>) -> PostgrestFilter<T, T>
 	where
 		T: Serialize + DeserializeOwned,
 	{
@@ -49,6 +49,7 @@ impl PostgrestClient {
 		if let Some(val) = count {
 			let mut new_headers = self.headers.clone().unwrap_or_else(HeaderMap::new);
 			new_headers.insert(HeaderName::from_str("Prefer").unwrap(), val.to_string().parse().unwrap());
+			self.headers = Some(new_headers);
 		}
 
 		PostgrestFilter::new(query_url, req_method, self.headers, req_body, PostgrestQuery::Call)
