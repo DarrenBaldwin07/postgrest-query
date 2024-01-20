@@ -1,5 +1,6 @@
-use crate::builder::{PostgrestQueryBuilder, Count};
-use reqwest::header::HeaderMap;
+use crate::builder::{Count, PostgrestQueryBuilder};
+use reqwest::{header::HeaderMap, Method};
+use serde::{de::DeserializeOwned, Serialize};
 
 pub struct PostgrestClient {
 	pub url: String,
@@ -16,12 +17,20 @@ impl PostgrestClient {
 		PostgrestQueryBuilder::new(url, self.headers.clone())
 	}
 
-	/// TODO https://postgrest.org/en/stable/references/api/schemas.html
+	/// TODO: https://postgrest.org/en/stable/references/api/schemas.html
 	fn schema() {}
 
 	/// Call a function in your database via postgrest
 	/// TODO: https://postgrest.org/en/stable/references/api/stored_procedures.html
-	fn call(&self, function: &str, head: Option<bool>, count: Count) {
+	fn call<T>(&self, function: &str, head: Option<bool>, count: Count, args: T)
+	where
+		T: Serialize + DeserializeOwned,
+	{
 		let mut url = format!("{}/rpc/{}", self.url, function);
+		let mut req_method: Method;
+
+		if let Some(val) = head {
+			req_method = Method::HEAD;
+		}
 	}
 }

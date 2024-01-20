@@ -1,6 +1,9 @@
 use std::str::FromStr;
 
-use crate::{filter::{PostgrestFilter, FilterType}, handler::{PostgrestError, PostgrestHandler}};
+use crate::{
+	filter::{FilterType, PostgrestFilter},
+	handler::{PostgrestError, PostgrestHandler},
+};
 use reqwest::{
 	header::{HeaderMap, HeaderName},
 	Method,
@@ -46,7 +49,7 @@ impl PostgrestQueryBuilder {
 	pub fn find_unique<T, U>(mut self, filter_column: &str, filter_type: FilterType, filter_value: U) -> PostgrestExecBuilder<T>
 	where
 		T: Serialize + DeserializeOwned,
-		U: Serialize + DeserializeOwned + ToString
+		U: Serialize + DeserializeOwned + ToString,
 	{
 		let filter_str = format!("{}.{}", filter_type.to_string(), filter_value.to_string());
 
@@ -175,11 +178,7 @@ impl PostgrestQueryBuilder {
 	where
 		T: Serialize + DeserializeOwned,
 	{
-		let ignore_duplicates = if ignore_duplicates.unwrap_or(false) {
-			"ignore"
-		} else {
-			"merge"
-		};
+		let ignore_duplicates = if ignore_duplicates.unwrap_or(false) { "ignore" } else { "merge" };
 
 		let resolution = format!("resolution={ignoreDuplicates}-duplicates", ignoreDuplicates = ignore_duplicates);
 
@@ -254,8 +253,10 @@ impl PostgrestQueryBuilder {
 }
 
 /// Builder that goes streight to `exec` or `exec_blocking` and doesnt have any filter methods
-pub struct PostgrestExecBuilder<T> where
-T: Serialize + DeserializeOwned {
+pub struct PostgrestExecBuilder<T>
+where
+	T: Serialize + DeserializeOwned,
+{
 	pub url: Url,
 	pub headers: Option<HeaderMap>,
 	pub method: Method,
@@ -263,8 +264,10 @@ T: Serialize + DeserializeOwned {
 	pub _marker: std::marker::PhantomData<T>,
 }
 
-impl<T> PostgrestExecBuilder<T> where
-T: Serialize + DeserializeOwned {
+impl<T> PostgrestExecBuilder<T>
+where
+	T: Serialize + DeserializeOwned,
+{
 	pub fn new(url: Url, headers: Option<HeaderMap>, method: Method, query_type: PostgrestQuery) -> Self {
 		PostgrestExecBuilder {
 			url,
