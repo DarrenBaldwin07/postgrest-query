@@ -26,7 +26,7 @@ impl PostgrestClient {
 
 	/// Call a function in your database via postgrest
 	/// TODO: https://postgrest.org/en/stable/references/api/stored_procedures.html
-	pub fn call<T>(mut self, function: &str, head: bool, count: Option<Count>, args: HashMap<&str, serde_json::Value>) -> PostgrestFilter<T, T>
+	pub async fn call<T>(mut self, function: &str, head: bool, count: Option<Count>, args: HashMap<&str, serde_json::Value>) -> Result<T, crate::handler::PostgrestError>
 	where
 		T: Serialize + DeserializeOwned,
 	{
@@ -52,6 +52,10 @@ impl PostgrestClient {
 			self.headers = Some(new_headers);
 		}
 
-		PostgrestFilter::new(query_url, req_method, self.headers, req_body, PostgrestQuery::Call)
+		PostgrestFilter::new(query_url, req_method, self.headers, req_body, PostgrestQuery::Call).exec().await
+	}
+
+	pub async fn call_blocking() {
+
 	}
 }
