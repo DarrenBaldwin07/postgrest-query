@@ -55,6 +55,7 @@ impl PostgrestClient {
 		PostgrestFilter::new(query_url, req_method, self.headers, req_body, PostgrestQuery::Call).exec().await
 	}
 
+	// TODO:
 	pub async fn call_blocking() {
 
 	}
