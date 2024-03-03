@@ -2,7 +2,7 @@ use postgrest_query::client::PostgrestClient;
 use reqwest::header::HeaderMap;
 use serde::{Deserialize, Serialize};
 
-const POSTGREST_URL: &str = "https://org-darren-demo-org-inst-postgrest-test.data-1.use1.tembo.io/restapi/v1";
+const POSTGREST_URL: &str = "https://org-darren-demo-org-inst-postgrest-query.data-1.use1.tembo.io/restapi/v1";
 
 #[derive(Debug, Deserialize, Serialize)]
 struct User {
@@ -18,9 +18,8 @@ async fn main() {
 	let mut headers = HeaderMap::new();
 	headers.insert("Authorization", auth_key.parse().unwrap());
 	headers.insert("Content-Type", "application/json".parse().unwrap());
-
 	let db = PostgrestClient::new(POSTGREST_URL.to_string(), Some(headers));
-	let query = db.from("users").delete::<serde_json::Value>(None).eq("id", "70").exec().await;
+
 
 	// let insert = db
 	// 	.from("users")
@@ -35,6 +34,7 @@ async fn main() {
 	// 	)
 	// 	.exec()
 	// 	.await;
+	let query = db.from("users").find_many::<serde_json::Value>().exec().await;
 
 	// let insert_many = db
 	// 	.from("users")
