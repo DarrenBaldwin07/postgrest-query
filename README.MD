@@ -29,10 +29,6 @@ async fn main() -> Result<(), std::error::Error> {
 }
 ```
 
-### rpc
-
-> Yes you can call a function inside of postgres over http :)
-
 ## TODO
 
 - [ ] Simple `Rust -> PostgREST -> Postgres` leveraging `serde` and resembling the [Prisma](https://github.com/prisma/prisma) query builder
