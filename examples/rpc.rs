@@ -3,7 +3,7 @@ use reqwest::header::HeaderMap;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-const POSTGREST_URL: &str = "https://org-darren-demo-org-inst-postgrest-test.data-1.use1.tembo.io/restapi/v1";
+const POSTGREST_URL: &str = "https://org-darren-demo-org-inst-postgrest-query.data-1.use1.tembo.io/restapi/v1";
 
 #[derive(Debug, Deserialize, Serialize)]
 struct User {
@@ -21,8 +21,11 @@ async fn main() {
 	headers.insert("Content-Type", "application/json".parse().unwrap());
 
     let mut args = HashMap::new();
-    args.insert("id", serde_json::Value::from(1));
+    args.insert("a", serde_json::Value::from(2));
+	args.insert("b", serde_json::Value::from(2));
 
 	let db = PostgrestClient::new(POSTGREST_URL.to_string(), Some(headers));
-	let query: serde_json::Value = db.call("get_user", false, None, args).await.unwrap();
+	let query: serde_json::Value = db.call("add_them", false, None, args).await.unwrap();
+	// Outputs `4`
+	println!("QUERY{:?}", query);
 }

@@ -74,7 +74,7 @@ impl PostgrestQueryBuilder {
 	/// Returns all rows for the specified relation (table)
 	///
 	/// # Example
-	pub fn find_many<T: Serialize + DeserializeOwned>(self) -> PostgrestFilter<T, T>
+	pub fn find_many<T: Serialize + DeserializeOwned>(self) -> PostgrestFilter<Vec<T>, T>
 	where
 		T: Serialize + DeserializeOwned,
 	{
