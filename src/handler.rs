@@ -26,6 +26,7 @@ pub struct PostgrestHandler<T> {
 	pub body: Option<T>,
 }
 
+
 impl<T> PostgrestHandler<T>
 where
 	T: Serialize + DeserializeOwned,
@@ -50,6 +51,8 @@ where
 		if let Some(body) = &self.body {
 			req_builder = req_builder.json(&body);
 		}
+
+
 
 		let res = req_builder.send();
 

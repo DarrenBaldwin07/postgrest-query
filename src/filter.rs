@@ -201,6 +201,8 @@ where
 		self
 	}
 
+	// TODO: support more filters
+
 	pub fn filter(mut self, column: &str, value: &str, filter_method: FilterType) -> Self {
 		self.url
 			.query_pairs_mut()
