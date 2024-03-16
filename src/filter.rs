@@ -201,7 +201,7 @@ where
 		self
 	}
 
-	// TODO: support more filters
+	// TODO: add more filters
 
 	pub fn filter(mut self, column: &str, value: &str, filter_method: FilterType) -> Self {
 		self.url
