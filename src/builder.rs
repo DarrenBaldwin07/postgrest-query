@@ -70,8 +70,7 @@ impl PostgrestQueryBuilder {
 		PostgrestExecBuilder::new(self.url, self.headers, Method::GET, PostgrestQuery::FindUnique)
 	}
 
-	/// Perform a SELECT query on the table/view.
-	/// Returns all rows for the specified relation (table)
+	/// Perform a SELECT query on the table/view
 	///
 	/// # Example
 	pub fn find_many<T: Serialize + DeserializeOwned>(self) -> PostgrestFilter<Vec<T>, T>
@@ -81,6 +80,9 @@ impl PostgrestQueryBuilder {
 		PostgrestFilter::new(self.url, Method::GET, self.headers, None, PostgrestQuery::FindMany)
 	}
 
+	/// Perform an INSERT into the table or view.
+	///
+	/// # Example
 	pub fn create<T>(mut self, values: T, default_to_null: Option<bool>, count: Option<Count>) -> PostgrestFilter<i32, T>
 	where
 		T: Serialize + DeserializeOwned,
@@ -116,6 +118,9 @@ impl PostgrestQueryBuilder {
 		PostgrestFilter::new(self.url, Method::POST, self.headers, Some(values), PostgrestQuery::Create)
 	}
 
+	/// Perform an INSERT of many items into the table or view.
+	///
+	/// # Example
 	pub fn create_many<T>(mut self, values: Vec<T>, default_to_null: Option<bool>, count: Option<Count>) -> PostgrestFilter<i32, Vec<T>>
 	where
 		T: Serialize + DeserializeOwned,
@@ -151,6 +156,9 @@ impl PostgrestQueryBuilder {
 		PostgrestFilter::new(self.url, Method::POST, self.headers, Some(values), PostgrestQuery::CreateMany)
 	}
 
+	/// Perform an UPDATE on the table or view.
+	///
+	/// # Example
 	pub fn update<T>(mut self, values: T, count: Option<Count>) -> PostgrestFilter<T, T>
 	where
 		T: Serialize + DeserializeOwned,
@@ -179,6 +187,9 @@ impl PostgrestQueryBuilder {
 		PostgrestFilter::new(self.url, Method::PATCH, self.headers, Some(values), PostgrestQuery::Update)
 	}
 
+	///  Perform an UPSERT on the table or view.
+	///
+	/// # Example
 	pub fn upsert<T>(
 		mut self,
 		values: T,

@@ -20,41 +20,7 @@ async fn main() {
 	headers.insert("Content-Type", "application/json".parse().unwrap());
 	let db = PostgrestClient::new(POSTGREST_URL.to_string(), Some(headers));
 
-	// let insert = db
-	// 	.from("users")
-	// 	.create(
-	// 		User {
-	// 			id: 65,
-	// 			name: "Darren".to_string(),
-	// 			password: "password".to_string(),
-	// 		},
-	// 		None,
-	// 		None,
-	// 	)
-	// 	.exec()
-	// 	.await;
 	let query = db.from("users").find_many::<User>().exec().await;
-
-	// let insert_many = db
-	// 	.from("users")
-	// 	.create_many(
-	// 		vec![
-	// 			User {
-	// 				id: 70,
-	// 				name: "Darren".to_string(),
-	// 				password: "password".to_string(),
-	// 			},
-	// 			User {
-	// 				id: 71,
-	// 				name: "Darren".to_string(),
-	// 				password: "password".to_string(),
-	// 			},
-	// 		],
-	// 		None,
-	// 		None,
-	// 	)
-	// 	.exec()
-	// 	.await;
 
 	println!("QUERY{:?}", query);
 }
