@@ -1,5 +1,5 @@
 use crate::builder::PostgrestQuery;
-use reqwest::{blocking::Client as BlockingClient, header::HeaderMap, Client};
+use reqwest::{blocking::Client as BlockingClient, header::{HeaderMap, USER_AGENT as REQWEST_USER_AGENT}, Client};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 use url::Url;
@@ -26,6 +26,8 @@ pub struct PostgrestHandler<T> {
 	pub body: Option<T>,
 }
 
+pub const USER_AGENT: &str = concat!("postgrest-query", env!("CARGO_PKG_VERSION"));
+
 
 impl<T> PostgrestHandler<T>
 where
@@ -46,13 +48,13 @@ where
 		O: Serialize + DeserializeOwned,
 	{
 		let client = BlockingClient::new();
-		let mut req_builder = client.request(self.method, self.url).headers(self.headers.unwrap_or(HeaderMap::new()));
+		let mut headers = self.headers.unwrap_or_else(HeaderMap::new);
+		headers.insert(REQWEST_USER_AGENT, USER_AGENT.parse().unwrap());
+		let mut req_builder = client.request(self.method, self.url).headers(headers);
 
 		if let Some(body) = &self.body {
 			req_builder = req_builder.json(&body);
 		}
-
-
 
 		let res = req_builder.send();
 
@@ -101,7 +103,9 @@ where
 		O: Serialize + DeserializeOwned,
 	{
 		let client = Client::new();
-		let mut req_builder = client.request(self.method, self.url).headers(self.headers.unwrap_or(HeaderMap::new()));
+		let mut headers = self.headers.unwrap_or_else(HeaderMap::new);
+		headers.insert(REQWEST_USER_AGENT, USER_AGENT.parse().unwrap());
+		let mut req_builder = client.request(self.method, self.url).headers(headers);
 
 		if let Some(body) = &self.body {
 			req_builder = req_builder.json(body);
