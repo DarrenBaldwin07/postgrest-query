@@ -1,5 +1,5 @@
 <h1 align="center">postgrest-query</h1>
-<p align="center">A type-safe query builder-esque experience via PostgREST</p>
+<p align="center">A type-safe query builder-esque experience via <a href='https://github.com/PostgREST/postgrest' target='_blank'>PostgREST</a></p>
 
 ## Install
 
