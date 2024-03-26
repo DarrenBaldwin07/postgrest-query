@@ -1,5 +1,5 @@
 <h1 align="center">postgrest-query</h1>
-<p align="center">A type-safe query builder-esque experience via <a href='https://github.com/PostgREST/postgrest' target='_blank'>PostgREST</a></p>
+<p align="center">A type-safe query builder-esque experience for <a href='https://github.com/PostgREST/postgrest' target='_blank'>PostgREST</a></p>
 
 ## Install
 
@@ -31,8 +31,8 @@ async fn main() -> Result<(), std::error::Error> {
 
 ## TODO
 
-- [ ] Simple `Rust -> PostgREST -> Postgres` leveraging `serde` and resembling the [Prisma](https://github.com/prisma/prisma) query builder
-- [ ] Allow providing custom schemas to enable even better type safety
+- [x] Simple `Rust -> PostgREST -> Postgres` leveraging `serde` and resembling the [Prisma](https://github.com/prisma/prisma) query builder
+- [ ] Support the entire PostgREST API
 - [ ] Potentially let consumers provide their own handler (defaults to [reqwest](https://crates.io/crates/reqwest) for now)
-- [ ] Compile time query checks (similar to `sqlx`)
+- [ ] Compile time query checks? (similar to `sqlx`)
 - [ ] Explore potential ports of this to other languages (TypeScript, Python, Go, etc.)
